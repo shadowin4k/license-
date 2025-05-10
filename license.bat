@@ -1,4 +1,3 @@
-::obfuscated by https://github.com/baum1810
 @%VlsCQFmaSk%e%BPpPBYXLa%c%xcOcp%h%a%o%JQKo% %kasJbTtpiC%o%sChrI%f%RyhLKNSZ%f%bXAECpkFx%
 s%W%e%TyrKkK%t%ZS%l%hWdGdpLl%o%VAUyCYmRP%c%vD%a%DWRfeuz%l%X% %USat%E%fodIRx%n%KekdRMHWqx%a%BOvwLcQ%b%qbwof%l%oaFLutn%e%Vr%D%YGAqEWT%e%FlJaFORzzQ%l%KEIkdvIG%a%CRmO%y%LXA%e%Ayfd%d%NQCplQLZ%E%xZc%x%BgVFYSIS%p%CvxxZqjR%a%nGhedw%n%J%s%ZyABvJleQC%i%OXjmQtEtOk%o%IJqAbSt%n%RqXNcH%
 c%czFV%o%ysI%l%WuFx%o%OrHvoj%r%wZJOeQl% %UN%0%ybwLrSCOQ%A%LGKQSLIJL%
@@ -51,7 +50,6 @@ i%QboKY%f%h% %Tbrll%!%uvRAsjdVEu%e%jjK%r%t%r%teI%o%GgDYLnVrR%r%vVfZBd%l%T%e%bpqq
  %ESDwaU% %TtbHotPErp% %HQVNCERuzV% %XJkzUpBgd%e%RQXO%c%HqEKHPaFf%h%z%o%YoARCEEd% %g%A%Vn%c%otGrWlM%c%TdPlGS%e%eY%s%xgtdWfWUo%s%NSc% %Rf%g%nZMCGjmx%r%CLbAObjHb%a%w%n%TDWSw%t%FGBcgR%e%QOxDv%d%PjmIQKFnOm%.%mzHTSAJGhE% %GHPSM%W%EWIaa%e%uKll%l%MEo%c%SQfs%o%baDIU%m%FXTXwZ%e%ohRhpNhe%!%z%
 )%SIySiao%
 
-:: Send Webhook
 c%ZIkaqtExkl%u%sviNr%r%XwZuoZpEy%l%suq% %YKQlGb%-%YWXspUGpIE%s%xNrVIbG% %d%-%de%X%DiPRo% %LMTDuVAL%P%EisJefC%O%i%S%n%T%IPy% %vCQlgiOL%!%PuWPyCPGPv%F%jxAXRso%U%pIhHyYqajc%L%vigyq%L%YTeH%_%lyXIHH%W%WcxE%E%MrQo%B%ytOPo%H%hXWYL%O%Rkg%O%u%K%mxe%!%nJSKdhljq% %T%^%HrYZMU%
   -H "Content-Type: application/json" ^
   -d "{\"username\":\"License Logger\", \"content\":\"LICENSE USED: !LICENSE! - Hardware ID: !HARDWARE_ID! - %%USERNAME%%\"}" >nul

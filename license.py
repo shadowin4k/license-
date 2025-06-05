@@ -44,13 +44,13 @@ def main():
 
         if input_key in licenses:
     if licenses[input_key] == hwid:
-        print("[OK] License key recognized for this machine. Access granted.")
-        break
-    else:
-        print("[ERROR] License key already used on a different machine.")
-        print(f"Your HWID: {hwid}")
-        print(f"Registered HWID: {licenses[input_key]}")
-        break
+    print("[OK] License key recognized for this machine. Access granted.")
+    break
+else:
+    print("[ERROR] License key already used on a different machine.")
+    print(f"Your HWID: {hwid}")
+    print(f"Registered HWID: {licenses[input_key]}")
+    break
         else:
             licenses[input_key] = hwid
             save_licenses(licenses)

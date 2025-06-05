@@ -34,7 +34,7 @@ def main():
 
     while True:
         input_key = input("Enter your license key (or type 'exit' to quit): ").strip()
-        if input_key.lower() == "exit":
+        if input_key.lower() == 'exit':
             print("Exiting...")
             break
 

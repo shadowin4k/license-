@@ -4,8 +4,9 @@ import uuid
 import hashlib
 import sys
 
+# Hardcoded license keys
 LICENSES = {
-    "ABC123-DEF456-GHI789": None,  # Initially unbound
+    "ABC123-DEF456-GHI789": None,
     "XYZ987-UVW654-RST321": None
 }
 
@@ -25,38 +26,30 @@ def save_local_license(key, hwid):
         json.dump({"key": key, "hwid": hwid}, f)
 
 def main():
-    local = load_local_license()
     current_hwid = get_hwid()
+    local = load_local_license()
 
-    if "key" in local and "hwid" in local:
-        if local["hwid"] == current_hwid and LICENSES.get(local["key"]) in [None, current_hwid]:
-            print("[*] License already activated and valid.")
-            sys.exit(0)  # success
-        else:
-            print("[!] License mismatch or used on another machine.")
-            input("Press any key to exit...")
-            sys.exit(1)
+    # Already activated
+    if local.get("key") and local.get("hwid") == current_hwid:
+        print("[*] License already activated and valid.")
+        sys.exit(0)
 
+    # Prompt for key
     print("Enter your license key:")
     key = input("> ").strip()
 
     if key not in LICENSES:
-        print("Invalid key. Access denied.")
+        print("[-] Invalid key.")
         sys.exit(1)
 
     bound_hwid = LICENSES[key]
-    if bound_hwid is None:
+    if bound_hwid is None or bound_hwid == current_hwid:
         LICENSES[key] = current_hwid
         save_local_license(key, current_hwid)
         print("[+] License activated successfully.")
         sys.exit(0)
-    elif bound_hwid == current_hwid:
-        save_local_license(key, current_hwid)
-        print("[+] License recognized.")
-        sys.exit(0)
     else:
         print("[-] This key is already used on another machine.")
-        input("Press any key to exit...")
         sys.exit(1)
 
 if __name__ == "__main__":

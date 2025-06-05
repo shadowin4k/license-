@@ -11,10 +11,8 @@ LICENSES = {
 
 LICENSE_FILE = "license.json"
 
-
 def get_hwid():
     return hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()
-
 
 def load_local_license():
     if os.path.isfile(LICENSE_FILE):
@@ -22,11 +20,9 @@ def load_local_license():
             return json.load(f)
     return {}
 
-
 def save_local_license(key, hwid):
     with open(LICENSE_FILE, "w") as f:
         json.dump({"key": key, "hwid": hwid}, f)
-
 
 def main():
     local = load_local_license()
@@ -35,31 +31,33 @@ def main():
     if "key" in local and "hwid" in local:
         if local["hwid"] == current_hwid and LICENSES.get(local["key"]) in [None, current_hwid]:
             print("[*] License already activated and valid.")
-            return
+            sys.exit(0)  # success
         else:
             print("[!] License mismatch or used on another machine.")
             input("Press any key to exit...")
-            return
+            sys.exit(1)
 
     print("Enter your license key:")
     key = input("> ").strip()
 
     if key not in LICENSES:
         print("Invalid key. Access denied.")
-        return
+        sys.exit(1)
 
     bound_hwid = LICENSES[key]
     if bound_hwid is None:
         LICENSES[key] = current_hwid
         save_local_license(key, current_hwid)
         print("[+] License activated successfully.")
+        sys.exit(0)
     elif bound_hwid == current_hwid:
         save_local_license(key, current_hwid)
         print("[+] License recognized.")
+        sys.exit(0)
     else:
         print("[-] This key is already used on another machine.")
         input("Press any key to exit...")
-
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

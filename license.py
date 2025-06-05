@@ -22,9 +22,9 @@ def save_licenses(data):
 
 def validate_key(input_key):
     valid_keys = {
-        "ABCDEF-123456-XYZ789",
-        "LICENSE-EXAMPLE-KEY123",
-        "SAMPLE-KEY-000000"
+        "00xsuhd798he87ghewyhdhasbds",
+        "00xy9q23d98qyus798yduashdau",
+        "00xsdh98u3whe97wqehriuyfhwu"
     }
     return input_key in valid_keys
 

@@ -34,13 +34,13 @@ def main():
 
     while True:
         input_key = input("Enter your license key (or type 'exit' to quit): ").strip()
-        if input_key.lower() == 'exit':
+        if input_key.lower() == "exit":
             print("Exiting...")
             break
 
         if not validate_key(input_key):
             print("[ERROR] Invalid license key. Please try again.")
-            continue  # retry
+            continue
 
         if input_key in licenses:
             if licenses[input_key] == hwid:
@@ -56,3 +56,6 @@ def main():
             save_licenses(licenses)
             print("[OK] License key registered to this machine. Access granted.")
             break
+
+if __name__ == "__main__":
+    main()

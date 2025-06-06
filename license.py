@@ -4,13 +4,13 @@ import uuid
 import hashlib
 import sys
 
-# ✅ Fixed: License keys properly comma-separated
+# ✅ Correctly formatted license key dictionary
 LICENSES = {
     "00xsuhd798he87ghewyhdhasbds": None,
     "00xy9q23d98qyus798yduashdau": None,
     "00xsdh98u3whe97wqehriuyfhwu": None,
     "00xujhnd78asyd7qhqdy7u2yhdu": None,
-    "00xndsaudhsuad893dwqdwqdqwd": None,
+    "00xndsaudhsuad893dwqdwqdqwd": None
 }
 
 LICENSE_FILE = "license.json"
@@ -21,7 +21,10 @@ def get_hwid():
 def load_local_license():
     if os.path.isfile(LICENSE_FILE):
         with open(LICENSE_FILE, "r") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
     return {}
 
 def save_local_license(key, hwid):

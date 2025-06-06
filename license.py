@@ -7,9 +7,9 @@ import sys
 # Hardcoded license keys
 LICENSES = {
     "00xsuhd798he87ghewyhdhasbds": None,
-    "00xy9q23d98qyus798yduashdau": None
-    "00xsdh98u3whe97wqehriuyfhwu": None
-    "00xujhnd78asyd7qhqdy7u2yhdu": None
+    "00xy9q23d98qyus798yduashdau": None,
+    "00xsdh98u3whe97wqehriuyfhwu": None,
+    "00xujhnd78asyd7qhqdy7u2yhdu": None,
     "00xndsaudhsuad893dwqdwqdqwd": None
 }
 

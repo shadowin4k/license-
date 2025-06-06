@@ -1,13 +1,11 @@
-import os
 import json
-import uuid
 import hashlib
-import sys
+import uuid
+import os
 
-LICENSE_FILE = "license.json"        # local cache for current machine
-LICENSES_DB_FILE = "licenses_db.json" # initial license keys list (all unbound)
+LICENSES_DB_FILE = "licenses_db.json"
 
-# Initial license keys, all unbound (None means unbound)
+# Your requested license keys (all unbound)
 INITIAL_LICENSES = {
     "00xsuhd798he87ghewyhdhasbds": None,
     "00xy9q23d98qyus798yduashdau": None,
@@ -17,71 +15,58 @@ INITIAL_LICENSES = {
 }
 
 def get_hwid():
-    return hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()
+    mac = uuid.getnode()
+    return hashlib.sha256(str(mac).encode()).hexdigest()
 
-def load_local_license():
-    print(f"Loading local license from {LICENSE_FILE}")
-    if os.path.isfile(LICENSE_FILE):
-        with open(LICENSE_FILE, "r") as f:
-            data = json.load(f)
-            print(f"Local license loaded: {data}")
-            return data
-    return {}
-
-def save_local_license(key, hwid):
-    print(f"Saving local license key={key} hwid={hwid} to {LICENSE_FILE}")
-    with open(LICENSE_FILE, "w") as f:
-        json.dump({"key": key, "hwid": hwid}, f)
-
-
-def load_licenses_db():
-    # Load static initial license keys; if missing, create with INITIAL_LICENSES
-    if os.path.isfile(LICENSES_DB_FILE):
-        with open(LICENSES_DB_FILE, "r") as f:
-            return json.load(f)
-    else:
+def load_licenses():
+    if not os.path.exists(LICENSES_DB_FILE):
         with open(LICENSES_DB_FILE, "w") as f:
             json.dump(INITIAL_LICENSES, f)
         return INITIAL_LICENSES.copy()
+    with open(LICENSES_DB_FILE, "r") as f:
+        return json.load(f)
+
+def save_licenses(data):
+    with open(LICENSES_DB_FILE, "w") as f:
+        json.dump(data, f, indent=4)
 
 def main():
-    current_hwid = get_hwid()
-    local = load_local_license()
-    licenses_db = load_licenses_db()  # Just keys with None values (unbound)
+    hwid = get_hwid()
+    licenses = load_licenses()
 
-    # If local license exists and HWID matches current machine, valid
-    if local.get("key") and local.get("hwid") == current_hwid:
-        print("[*] License already activated and valid.")
-        sys.exit(0)
+    # Check if this HWID is already bound to a key
+    bound_key_for_hwid = None
+    for key, bound_hwid in licenses.items():
+        if bound_hwid == hwid:
+            bound_key_for_hwid = key
+            break
 
-    # If local license exists but HWID differs, deny to prevent key switching on same machine
-    if local.get("key") and local.get("hwid") != current_hwid:
-        print("[-] License key found for different machine on this device. Access denied.")
-        sys.exit(1)
+    if bound_key_for_hwid:
+        print(f"Your machine is already bound to license key: {bound_key_for_hwid}")
+        print("You cannot use a different license key on this machine.")
+        return
 
-    # Prevent multiple keys bound to same HWID (check local license only since no DB updates)
-    if local.get("hwid") == current_hwid:
-        print(f"[*] This machine is already bound to license key: {local.get('key')}")
-        sys.exit(0)
+    user_key = input("Enter your license key: ").strip()
 
-    # Ask user for license key input
-    print("Enter your license key:")
-    key = input("> ").strip()
+    if user_key not in licenses:
+        print("Invalid license key.")
+        return
 
-    # Validate key existence in initial keys list
-    if key not in licenses_db:
-        print("[-] Invalid key.")
-        sys.exit(1)
+    if licenses[user_key] is not None and licenses[user_key] != hwid:
+        print("This license key is already bound to another machine.")
+        return
 
-    # Check if key is already used on a different HWID (using local license file only)
-    if local.get("key") == key and local.get("hwid") != current_hwid:
-        print("[-] This key is already used on another machine.")
-        sys.exit(1)
+    # Double check if HWID already has a different key (redundant)
+    for key, bound_hwid in licenses.items():
+        if bound_hwid == hwid and key != user_key:
+            print("This machine is already bound to a different license key.")
+            return
 
-    # If no local license or the same key on this machine, save local license file only
-    save_local_license(key, current_hwid)
-    print("[+] License activated successfully.")
-    sys.exit(0)
+    licenses[user_key] = hwid
+    save_licenses(licenses)
+
+    print(f"License key {user_key} successfully bound to this machine.")
+    print("Access granted!")
 
 if __name__ == "__main__":
     main()

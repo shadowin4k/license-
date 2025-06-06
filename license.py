@@ -1,15 +1,15 @@
-import os
+fix import os
 import json
 import uuid
 import hashlib
 import sys
 
-# ✅ Correctly formatted license key dictionary
+# Hardcoded license keys
 LICENSES = {
     "00xsuhd798he87ghewyhdhasbds": None,
-    "00xy9q23d98qyus798yduashdau": None,
-    "00xsdh98u3whe97wqehriuyfhwu": None,
-    "00xujhnd78asyd7qhqdy7u2yhdu": None,
+    "00xy9q23d98qyus798yduashdau": None
+    "00xsdh98u3whe97wqehriuyfhwu": None
+    "00xujhnd78asyd7qhqdy7u2yhdu": None
     "00xndsaudhsuad893dwqdwqdqwd": None
 }
 
@@ -21,10 +21,7 @@ def get_hwid():
 def load_local_license():
     if os.path.isfile(LICENSE_FILE):
         with open(LICENSE_FILE, "r") as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return {}
+            return json.load(f)
     return {}
 
 def save_local_license(key, hwid):
@@ -35,10 +32,12 @@ def main():
     current_hwid = get_hwid()
     local = load_local_license()
 
+    # Already activated
     if local.get("key") and local.get("hwid") == current_hwid:
         print("[*] License already activated and valid.")
         sys.exit(0)
 
+    # Prompt for key
     print("Enter your license key:")
     key = input("> ").strip()
 

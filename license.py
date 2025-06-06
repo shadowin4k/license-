@@ -20,14 +20,19 @@ def get_hwid():
     return hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()
 
 def load_local_license():
+    print(f"Loading local license from {LICENSE_FILE}")
     if os.path.isfile(LICENSE_FILE):
         with open(LICENSE_FILE, "r") as f:
-            return json.load(f)
+            data = json.load(f)
+            print(f"Local license loaded: {data}")
+            return data
     return {}
 
 def save_local_license(key, hwid):
+    print(f"Saving local license key={key} hwid={hwid} to {LICENSE_FILE}")
     with open(LICENSE_FILE, "w") as f:
         json.dump({"key": key, "hwid": hwid}, f)
+
 
 def load_licenses_db():
     # Load static initial license keys; if missing, create with INITIAL_LICENSES

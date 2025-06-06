@@ -4,7 +4,7 @@ import uuid
 import hashlib
 import sys
 
-# ✅ Hardcoded license keys with correct commas
+# ✅ Fixed: License keys with correct syntax
 LICENSES = {
     "00xsuhd798he87ghewyhdhasbds": None,
     "00xy9q23d98qyus798yduashdau": None,

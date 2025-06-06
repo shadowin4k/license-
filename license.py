@@ -4,9 +4,9 @@ import uuid
 import hashlib
 import sys
 
-# ✅ Fixed: License keys with correct syntax
+# ✅ Fixed: License keys properly comma-separated
 LICENSES = {
-    "00xsuhd798he87ghewyhdhasbds,: None,
+    "00xsuhd798he87ghewyhdhasbds": None,
     "00xy9q23d98qyus798yduashdau": None,
     "00xsdh98u3whe97wqehriuyfhwu": None,
     "00xujhnd78asyd7qhqdy7u2yhdu": None,
@@ -21,10 +21,7 @@ def get_hwid():
 def load_local_license():
     if os.path.isfile(LICENSE_FILE):
         with open(LICENSE_FILE, "r") as f:
-            try:
-                return json.load(f)
-            except json.JSONDecodeError:
-                return {}
+            return json.load(f)
     return {}
 
 def save_local_license(key, hwid):

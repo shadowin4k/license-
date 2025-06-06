@@ -4,7 +4,7 @@ import uuid
 import hashlib
 import sys
 
-# Hardcoded license keys
+# ✅ Hardcoded license keys with correct commas
 LICENSES = {
     "00xsuhd798he87ghewyhdhasbds": None,
     "00xy9q23d98qyus798yduashdau": None,
@@ -16,11 +16,9 @@ LICENSES = {
 LICENSE_FILE = "license.json"
 
 def get_hwid():
-    """Generate a SHA-256 hashed hardware ID using the machine's MAC address."""
     return hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()
 
 def load_local_license():
-    """Load locally saved license data from license.json."""
     if os.path.isfile(LICENSE_FILE):
         with open(LICENSE_FILE, "r") as f:
             try:
@@ -30,7 +28,6 @@ def load_local_license():
     return {}
 
 def save_local_license(key, hwid):
-    """Save license and HWID binding to local file."""
     with open(LICENSE_FILE, "w") as f:
         json.dump({"key": key, "hwid": hwid}, f)
 

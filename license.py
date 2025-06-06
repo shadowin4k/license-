@@ -1,36 +1,32 @@
 import os
 import uuid
 import hashlib
+import json
 
 LICENSES_DB_FILE = "licenses_db.json"
 
-# Predefined license keys - all unbound initially (value=None)
-INITIAL_LICENSES = {
-    "00xsuhd798he87ghewyhdhasbds": None,
-    "00xy9q23d98qyus798yduashdau": None,
-    "00xqwekj123jkqwej123kwej12": None,
-    "00xasdfasfdasdfasdfsadfasdf": None,
+# Valid license keys (not saved unless used)
+VALID_LICENSE_KEYS = {
+    "00xsuhd798he87ghewyhdhasbds",
+    "00xy9q23d98qyus798yduashdau",
+    "00xqwekj123jkqwej123kwej12",
+    "00xasdfasfdasdfasdfsadfasdf",
 }
 
 def get_hwid():
-    # Use MAC address hashed as HWID
-    mac = uuid.getnode()
-    hwid = hashlib.sha256(str(mac).encode()).hexdigest()
-    return hwid
+    return hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()
 
 def load_licenses_db():
-    if not os.path.isfile(LICENSES_DB_FILE):
-        # If file doesn't exist, initialize with INITIAL_LICENSES
-        return INITIAL_LICENSES.copy()
-    with open(LICENSES_DB_FILE, "r") as f:
-        return json.load(f)
+    if os.path.isfile(LICENSES_DB_FILE):
+        with open(LICENSES_DB_FILE, "r") as f:
+            return json.load(f)
+    return {}  # Only used keys are stored
 
 def save_licenses_db(data):
     with open(LICENSES_DB_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
 def find_key_by_hwid(licenses_db, hwid):
-    # Check if this HWID is already bound to any key
     for key, bound_hwid in licenses_db.items():
         if bound_hwid == hwid:
             return key
@@ -40,7 +36,7 @@ def main():
     hwid = get_hwid()
     licenses_db = load_licenses_db()
 
-    # Check if this HWID already has a license bound
+    # Prevent different key reuse on same HWID
     existing_key = find_key_by_hwid(licenses_db, hwid)
     if existing_key:
         print(f"This PC is already bound to license key: {existing_key}")
@@ -48,27 +44,23 @@ def main():
         input("Press Enter to exit...")
         return
 
-    # Otherwise ask user to input license key
     key = input("Enter your license key:\n> ").strip()
 
-    if key not in licenses_db:
+    if key not in VALID_LICENSE_KEYS:
         print("Invalid license key.")
         input("Press Enter to exit...")
         return
 
-    if licenses_db[key] is None:
-        # License key is unbound, bind it now to this HWID
+    if key in licenses_db:
+        if licenses_db[key] == hwid:
+            print("License key recognized on this PC. Access granted.")
+        else:
+            print("This license key is already used on a different PC. Access denied.")
+    else:
+        # Bind new key
         licenses_db[key] = hwid
         save_licenses_db(licenses_db)
         print("License key accepted and bound to this PC. Access granted.")
-    else:
-        # License key already bound to some HWID
-        if licenses_db[key] == hwid:
-            # Same HWID: allow usage
-            print("License key recognized on this PC. Access granted.")
-        else:
-            # Different HWID: reject usage
-            print("This license key is already used on a different PC. Access denied.")
 
     input("Press Enter to exit...")
 

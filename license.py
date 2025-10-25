@@ -1,68 +1,48 @@
-import os
-import uuid
-import hashlib
-import json
+import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/components/ui/use-toast';
 
-LICENSES_DB_FILE = "licenses_db.json"
+const LicenseManager = () => {
+  const { toast } = useToast();
+  const [key, setKey] = useState('');
 
-# Valid license keys (not saved unless used)
-VALID_LICENSE_KEYS = {
-    "00xsuhd798he87ghewyhdhasbds",
-    "00xy9q23d98qyus798yduashdau",
-    "00xqwekj123jkqwej123kwej12",
-    "00xasdfasfdasdfasdfsadfasdf",
-}
+  // Mock HWID generation (in a real app, use a client-side library or server-generated HWID)
+  const hwid = 'mock-hwid-' + Math.random().toString(36).substring(2); // Replace with actual HWID logic
 
-def get_hwid():
-    return hashlib.sha256(str(uuid.getnode()).encode()).hexdigest()
+  const validateLicense = useMutation({
+    mutationFn: async () => await axios.post('/api/validate-license', { key, hwid }),
+    onSuccess: ({ data }) => toast({ title: 'Success', description: data.message }),
+    onError: (error: any) => toast({ title: 'Error', description: error.response?.data?.error, variant: 'destructive' }),
+  });
 
-def load_licenses_db():
-    if os.path.isfile(LICENSES_DB_FILE):
-        with open(LICENSES_DB_FILE, "r") as f:
-            return json.load(f)
-    return {}  # Only used keys are stored
+  return (
+    <Card className="border-void-green bg-void-dark">
+      <CardHeader>
+        <CardTitle className="text-void-green">License Validation</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <Input
+            value={key}
+            onChange={(e) => setKey(e.target.value)}
+            placeholder="Enter your license key"
+            className="border-void-green bg-void-darker text-foreground"
+          />
+          <Button
+            onClick={() => validateLicense.mutate()}
+            className="bg-void-green text-void-dark hover:bg-void-green/80"
+            disabled={!key}
+          >
+            Validate License
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
 
-def save_licenses_db(data):
-    with open(LICENSES_DB_FILE, "w") as f:
-        json.dump(data, f, indent=4)
-
-def find_key_by_hwid(licenses_db, hwid):
-    for key, bound_hwid in licenses_db.items():
-        if bound_hwid == hwid:
-            return key
-    return None
-
-def main():
-    hwid = get_hwid()
-    licenses_db = load_licenses_db()
-
-    # Prevent different key reuse on same HWID
-    existing_key = find_key_by_hwid(licenses_db, hwid)
-    if existing_key:
-        print(f"This PC is already bound to license key: {existing_key}")
-        print("You cannot use a different license key on this machine.")
-        input("Press Enter to exit...")
-        return
-
-    key = input("Enter your license key:\n> ").strip()
-
-    if key not in VALID_LICENSE_KEYS:
-        print("Invalid license key.")
-        input("Press Enter to exit...")
-        return
-
-    if key in licenses_db:
-        if licenses_db[key] == hwid:
-            print("License key recognized on this PC. Access granted.")
-        else:
-            print("This license key is already used on a different PC. Access denied.")
-    else:
-        # Bind new key
-        licenses_db[key] = hwid
-        save_licenses_db(licenses_db)
-        print("License key accepted and bound to this PC. Access granted.")
-
-    input("Press Enter to exit...")
-
-if __name__ == "__main__":
-    main()
+export default LicenseManager;

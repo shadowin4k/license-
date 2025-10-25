@@ -7,9 +7,10 @@ import argparse
 import re
 from typing import Dict, Optional
 
-# New consistent name for the local license database file
+# Local license database file
 LICENSES_FILE = "your_licenses_DO_NOT_DELETE.json"
 
+# Hardcoded valid license keys (replace with server validation in production)
 VALID_LICENSE_KEYS = {
     "0x783624",
     "0x1a2b3c",
@@ -22,7 +23,7 @@ def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 def get_hwid() -> str:
-    """Generate a stable HWID based on multiple system identifiers."""
+    """Generate a stable HWID based on system identifiers."""
     try:
         mac = str(uuid.getnode())
         hostname = os.popen('hostname').read().strip()
@@ -34,7 +35,7 @@ def get_hwid() -> str:
         sys.exit(1)
 
 def load_license_data() -> Dict[str, str]:
-    """Load the local license data from file."""
+    """Load the local license data."""
     if not os.path.isfile(LICENSES_FILE):
         return {}
     try:
@@ -45,7 +46,7 @@ def load_license_data() -> Dict[str, str]:
         return {}
 
 def save_license_data(data: Dict[str, str]) -> bool:
-    """Save the local license data to file."""
+    """Save the local license data."""
     try:
         with open(LICENSES_FILE, "w") as f:
             json.dump(data, f, indent=4)
@@ -59,11 +60,11 @@ def find_key_by_hwid(license_data: Dict[str, str], hwid: str) -> Optional[str]:
     return next((key for key, bound_hwid in license_data.items() if bound_hwid == hwid), None)
 
 def validate_key_format(key: str) -> bool:
-    """Validate that the key matches the format 0x###### (6 hex digits)."""
+    """Check that the key matches 0x###### format."""
     return bool(re.match(r'^0x[0-9a-fA-F]{6}$', key))
 
 def validate_key_server(key: str) -> bool:
-    """Placeholder for server-based key validation."""
+    """Validate license key (placeholder for server validation)."""
     return key in VALID_LICENSE_KEYS
 
 def get_license_key() -> Optional[str]:
@@ -71,6 +72,7 @@ def get_license_key() -> Optional[str]:
     parser = argparse.ArgumentParser(description="License Key Validation")
     parser.add_argument('--key', type=str, help='License key')
     args = parser.parse_args()
+
     if args.key:
         print("Using license key from command-line argument")
         return args.key.strip()
@@ -90,7 +92,7 @@ def get_license_key() -> Optional[str]:
         sys.exit(1)
 
 def main() -> int:
-    """Main function for license validation."""
+    """Main license validation logic."""
     hwid = get_hwid()
     license_data = load_license_data()
 
@@ -100,11 +102,11 @@ def main() -> int:
         print("Access granted.")
         return 0
 
-    max_attempts = 10000
-    for attempt in range(1, max_attempts + 1):
+    while True:
         clear_screen()
-        print("License verification\n[+]\n")
-        
+        print("License verification")
+        print("[+]\n")
+
         key = get_license_key()
         if not key:
             continue
@@ -134,9 +136,6 @@ def main() -> int:
             print("Failed to save license data. Access denied.")
             input("Press Enter to try again...")
             continue
-
-    print(f"Failed after {max_attempts} attempts. Exiting.")
-    return 1
 
 if __name__ == "__main__":
     sys.exit(main())

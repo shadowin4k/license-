@@ -104,7 +104,7 @@ def main() -> int:
 
     while True:
         clear_screen()
-        print("- License verification  [+]\n")
+        print("License verification  [+]\n")
 
         key = get_license_key()
         if not key:

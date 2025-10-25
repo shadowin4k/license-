@@ -103,7 +103,7 @@ def main() -> int:
     max_attempts = 10000
     for attempt in range(1, max_attempts + 1):
         clear_screen()
-        print(f"License Validation (Attempt {attempt}/{max_attempts})\n")
+        print("License verification\n[+]\n")
         
         key = get_license_key()
         if not key:

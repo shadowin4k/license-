@@ -4,16 +4,18 @@ import hashlib
 import json
 import sys
 import argparse
+import re
 from typing import Dict, Optional
 
 LICENSES_DB_FILE = "licenses_db.json"
 
-# Hardcoded license keys (replace with server-based validation for production)
+# Hardcoded license keys in the format 0x###### (6 hex digits)
+# Replace with server-based validation for production
 VALID_LICENSE_KEYS = {
-    "00xsuhd798he87ghewyhdhasbds",
-    "00xy9q23d98qyus798yduashdau",
-    "00xqwekj123jkqwej123kwej12",
-    "00xasdfasfdasdfasdfsadfasdf",
+    "0x783624",
+    "0x1a2b3c",
+    "0xabcdef",
+    "0x987654",
 }
 
 def get_hwid() -> str:
@@ -53,6 +55,10 @@ def find_key_by_hwid(licenses_db: Dict[str, str], hwid: str) -> Optional[str]:
     """Find a license key bound to the given HWID."""
     return next((key for key, bound_hwid in licenses_db.items() if bound_hwid == hwid), None)
 
+def validate_key_format(key: str) -> bool:
+    """Validate that the key matches the format 0x###### (6 hex digits)."""
+    return bool(re.match(r'^0x[0-9a-fA-F]{6}$', key))
+
 def validate_key_server(key: str) -> bool:
     """Placeholder for server-based key validation (e.g., for Network Security Dashboard)."""
     # Example: Replace with API call to your Express server
@@ -64,31 +70,31 @@ def validate_key_server(key: str) -> bool:
     #     return False
     return key in VALID_LICENSE_KEYS
 
-def get_license_key(attempt: int, max_attempts: int) -> Optional[str]:
+def get_license_key(attempt: int) -> Optional[str]:
     """Safely get license key from input, environment variable, or command-line argument."""
     # Check command-line argument
     parser = argparse.ArgumentParser(description="License Key Validation")
-    parser.add_argument('--key', type=str, help='License key')
+    parser.add_argument('--key', type=str, help='License key (format: 0x######)')
     args = parser.parse_args()
     if args.key:
-        print(f"Using license key from command-line argument (attempt {attempt}/{max_attempts})")
+        print(f"Using license key from command-line argument (attempt {attempt})")
         return args.key.strip()
 
     # Check environment variable
     key = os.environ.get('LICENSE_KEY')
     if key:
-        print(f"Using license key from environment variable (attempt {attempt}/{max_attempts})")
+        print(f"Using license key from environment variable (attempt {attempt})")
         return key.strip()
 
     # Fallback to interactive input
     try:
-        return input(f"Enter your license key (attempt {attempt}/{max_attempts}):\n> ").strip()
+        return input(f"Enter your license key (format: 0x######, e.g., 0x783624) (attempt {attempt}):\n> ").strip()
     except EOFError:
         print("Error: Input stream closed. Provide a license key via --key, LICENSE_KEY environment variable, or run interactively.")
         return None
     except KeyboardInterrupt:
-        print("Input interrupted by user.")
-        return None
+        print("Input interrupted by user. Exiting.")
+        sys.exit(1)
 
 def main() -> int:
     """Main function for license validation."""
@@ -102,17 +108,20 @@ def main() -> int:
         print("Access granted.")
         return 0  # Success (already authorized)
 
-    # Prompt for key with retries
-    max_attempts = 3
-    for attempt in range(1, max_attempts + 1):
-        key = get_license_key(attempt, max_attempts)
+    # Prompt for key with unlimited retries
+    attempt = 1
+    while True:
+        key = get_license_key(attempt)
         if not key:
+            attempt += 1
             continue
-        if len(key) < 8:  # Basic validation for key length
-            print("License key must be at least 8 characters long.")
+        if not validate_key_format(key):
+            print("Invalid key format. Must be 0x followed by 6 hexadecimal digits (e.g., 0x783624).")
+            attempt += 1
             continue
         if not validate_key_server(key):
             print("Invalid license key.")
+            attempt += 1
             continue
 
         # Check if key is already used
@@ -132,9 +141,6 @@ def main() -> int:
         else:
             print("Failed to save license database. Access denied.")
             return 1
-
-    print(f"Failed after {max_attempts} attempts. Exiting.")
-    return 1
 
 if __name__ == "__main__":
     sys.exit(main())

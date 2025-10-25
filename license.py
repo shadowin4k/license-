@@ -7,7 +7,7 @@ import argparse
 import re
 from typing import Dict, Optional
 
-LICENSES_DB_FILE = "licenses_db.json"
+LICENSES_DB_FILE = "your_licenses_DO_NOT_delete.json"
 
 VALID_LICENSE_KEYS = {
     "0x783624",

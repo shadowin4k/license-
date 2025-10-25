@@ -7,8 +7,8 @@ import argparse
 import re
 from typing import Dict, Optional
 
-# Renamed licenses database file
-LICENSES_DB_FILE = "your_licenses_DO_NOT_DELETE.json"
+# New consistent name for the local license database file
+LICENSES_FILE = "your_licenses_DO_NOT_DELETE.json"
 
 VALID_LICENSE_KEYS = {
     "0x783624",
@@ -33,30 +33,30 @@ def get_hwid() -> str:
         print(f"Error generating HWID: {e}")
         sys.exit(1)
 
-def load_licenses_db() -> Dict[str, str]:
-    """Load the licenses database from file, handling errors."""
-    if not os.path.isfile(LICENSES_DB_FILE):
+def load_license_data() -> Dict[str, str]:
+    """Load the local license data from file."""
+    if not os.path.isfile(LICENSES_FILE):
         return {}
     try:
-        with open(LICENSES_DB_FILE, "r") as f:
+        with open(LICENSES_FILE, "r") as f:
             return json.load(f)
     except (json.JSONDecodeError, PermissionError, OSError) as e:
-        print(f"Error loading licenses database: {e}")
+        print(f"Error loading license data: {e}")
         return {}
 
-def save_licenses_db(data: Dict[str, str]) -> bool:
-    """Save the licenses database to file, handling errors."""
+def save_license_data(data: Dict[str, str]) -> bool:
+    """Save the local license data to file."""
     try:
-        with open(LICENSES_DB_FILE, "w") as f:
+        with open(LICENSES_FILE, "w") as f:
             json.dump(data, f, indent=4)
         return True
     except (PermissionError, OSError) as e:
-        print(f"Error saving licenses database: {e}")
+        print(f"Error saving license data: {e}")
         return False
 
-def find_key_by_hwid(licenses_db: Dict[str, str], hwid: str) -> Optional[str]:
+def find_key_by_hwid(license_data: Dict[str, str], hwid: str) -> Optional[str]:
     """Find a license key bound to the given HWID."""
-    return next((key for key, bound_hwid in licenses_db.items() if bound_hwid == hwid), None)
+    return next((key for key, bound_hwid in license_data.items() if bound_hwid == hwid), None)
 
 def validate_key_format(key: str) -> bool:
     """Validate that the key matches the format 0x###### (6 hex digits)."""
@@ -92,9 +92,9 @@ def get_license_key() -> Optional[str]:
 def main() -> int:
     """Main function for license validation."""
     hwid = get_hwid()
-    licenses_db = load_licenses_db()
+    license_data = load_license_data()
 
-    existing_key = find_key_by_hwid(licenses_db, hwid)
+    existing_key = find_key_by_hwid(license_data, hwid)
     if existing_key:
         print(f"This PC is already bound to license key: {existing_key}")
         print("Access granted.")
@@ -117,8 +117,8 @@ def main() -> int:
             input("Press Enter to try again...")
             continue
 
-        if key in licenses_db:
-            if licenses_db[key] == hwid:
+        if key in license_data:
+            if license_data[key] == hwid:
                 print("License key recognized on this PC. Access granted.")
                 return 0
             else:
@@ -126,12 +126,12 @@ def main() -> int:
                 input("Press Enter to try again...")
                 continue
 
-        licenses_db[key] = hwid
-        if save_licenses_db(licenses_db):
+        license_data[key] = hwid
+        if save_license_data(license_data):
             print("License key accepted and bound to this PC. Access granted.")
             return 0
         else:
-            print("Failed to save license database. Access denied.")
+            print("Failed to save license data. Access denied.")
             input("Press Enter to try again...")
             continue
 

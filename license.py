@@ -9,8 +9,6 @@ from typing import Dict, Optional
 
 LICENSES_DB_FILE = "licenses_db.json"
 
-# Hardcoded license keys in the format 0x###### (6 hex digits)
-# Replace with server-based validation for production
 VALID_LICENSE_KEYS = {
     "0x783624",
     "0x1a2b3c",
@@ -18,12 +16,16 @@ VALID_LICENSE_KEYS = {
     "0x987654",
 }
 
+def clear_screen():
+    """Clear the console screen."""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
 def get_hwid() -> str:
     """Generate a stable HWID based on multiple system identifiers."""
     try:
-        mac = str(uuid.getnode())  # MAC address
-        hostname = os.popen('hostname').read().strip()  # Hostname
-        cpu_info = os.popen('wmic cpu get ProcessorId' if os.name == 'nt' else 'cat /proc/cpuinfo').read().strip()  # CPU info
+        mac = str(uuid.getnode())
+        hostname = os.popen('hostname').read().strip()
+        cpu_info = os.popen('wmic cpu get ProcessorId' if os.name == 'nt' else 'cat /proc/cpuinfo').read().strip()
         combined = f"{mac}:{hostname}:{cpu_info}"
         return hashlib.sha256(combined.encode()).hexdigest()
     except Exception as e:
@@ -60,19 +62,11 @@ def validate_key_format(key: str) -> bool:
     return bool(re.match(r'^0x[0-9a-fA-F]{6}$', key))
 
 def validate_key_server(key: str) -> bool:
-    """Placeholder for server-based key validation (e.g., for Network Security Dashboard)."""
-    # Example: Replace with API call to your Express server
-    # try:
-    #     response = requests.post('http://your-server/api/validate-license', json={'key': key})
-    #     return response.status_code == 200
-    # except requests.RequestException as e:
-    #     print(f"Server validation failed: {e}")
-    #     return False
+    """Placeholder for server-based key validation."""
     return key in VALID_LICENSE_KEYS
 
 def get_license_key() -> Optional[str]:
     """Safely get license key from input, environment variable, or command-line argument."""
-    # Check command-line argument
     parser = argparse.ArgumentParser(description="License Key Validation")
     parser.add_argument('--key', type=str, help='License key')
     args = parser.parse_args()
@@ -80,17 +74,15 @@ def get_license_key() -> Optional[str]:
         print("Using license key from command-line argument")
         return args.key.strip()
 
-    # Check environment variable
     key = os.environ.get('LICENSE_KEY')
     if key:
         print("Using license key from environment variable")
         return key.strip()
 
-    # Fallback to interactive input
     try:
         return input("Enter your license key:\n> ").strip()
     except EOFError:
-        print("Error: Input stream closed. Provide a license key via --key, LICENSE_KEY environment variable, or run interactively.")
+        print("Error: Input stream closed.")
         return None
     except KeyboardInterrupt:
         print("Input interrupted by user. Exiting.")
@@ -101,48 +93,49 @@ def main() -> int:
     hwid = get_hwid()
     licenses_db = load_licenses_db()
 
-    # Check if HWID is already bound to a key
     existing_key = find_key_by_hwid(licenses_db, hwid)
     if existing_key:
         print(f"This PC is already bound to license key: {existing_key}")
         print("Access granted.")
-        return 0  # Success (proceeds to LEINON :banner)
+        return 0
 
-    # Prompt for key with up to 10,000 attempts
     max_attempts = 10000
     for attempt in range(1, max_attempts + 1):
+        clear_screen()
+        print(f"License Validation (Attempt {attempt}/{max_attempts})\n")
+        
         key = get_license_key()
         if not key:
             continue
         if not validate_key_format(key):
             print("Invalid key format. Must be 0x followed by 6 hexadecimal digits.")
+            input("Press Enter to try again...")
             continue
         if not validate_key_server(key):
             print("Invalid license key.")
+            input("Press Enter to try again...")
             continue
 
-        # Check if key is already used
         if key in licenses_db:
             if licenses_db[key] == hwid:
                 print("License key recognized on this PC. Access granted.")
-                return 0  # Success (proceeds to LEINON :banner)
+                return 0
             else:
-                print("This license key is already used on a different PC. Access denied.")
-                print("Please try another key.")
+                print("This license key is already used on a different PC.")
+                input("Press Enter to try again...")
                 continue
 
-        # Bind new key
         licenses_db[key] = hwid
         if save_licenses_db(licenses_db):
             print("License key accepted and bound to this PC. Access granted.")
-            return 0  # Success (proceeds to LEINON :banner)
+            return 0
         else:
             print("Failed to save license database. Access denied.")
-            print("Please try again.")
+            input("Press Enter to try again...")
             continue
 
     print(f"Failed after {max_attempts} attempts. Exiting.")
-    return 1  # Failure (does not proceed to :banner)
+    return 1
 
 if __name__ == "__main__":
     sys.exit(main())

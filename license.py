@@ -131,16 +131,20 @@ def main() -> int:
                 return 0
             else:
                 print("This license key is already used on a different PC. Access denied.")
-                return 1
+                print("Please try another key.")
+                attempt += 1
+                continue
 
         # Bind new key
         licenses_db[key] = hwid
         if save_licenses_db(licenses_db):
             print("License key accepted and bound to this PC. Access granted.")
-            return 0
+            return 0  # Success, proceeds to LEINON :banner
         else:
             print("Failed to save license database. Access denied.")
-            return 1
+            print("Please try again.")
+            attempt += 1
+            continue
 
 if __name__ == "__main__":
     sys.exit(main())
